@@ -45,9 +45,9 @@ export default function FinancialTradeComponent({
   ];
   const tradesRef = useRef<TradesSocketData[]>([
     {
-      pair: "",
       price: 0,
       quantity: 0,
+      symbol: "",
       time: "",
     },
   ]);
@@ -80,11 +80,7 @@ export default function FinancialTradeComponent({
   }, []);
 
   return (
-    <Box
-      borderLeft="solid 1px #e2e8f0"
-      height="calc(100vh - 130px)"
-      overflow="hidden"
-    >
+    <Box height="calc(100vh - 130px)" overflow="hidden">
       <Table size="sm">
         <Thead>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -94,7 +90,7 @@ export default function FinancialTradeComponent({
 
                 return (
                   <Th
-                    color="gray.500"
+                    color="gray.100"
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                     isNumeric={meta?.isNumeric}
                     key={header.id}
@@ -122,6 +118,7 @@ export default function FinancialTradeComponent({
                     <Td
                       borderColor="gray.500"
                       color={row.original.color}
+                      fontWeight="300"
                       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
                       isNumeric={meta?.isNumeric}
                       key={cell.id}

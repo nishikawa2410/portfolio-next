@@ -1,6 +1,17 @@
 import { format } from "date-fns";
 
 /* eslint-disable unused-imports/no-unused-vars */
+export type ExchangeHTTPResponse = {
+  symbols: [
+    {
+      baseAsset: string;
+      quoteAsset: string;
+      status: string;
+      symbol: string;
+    }
+  ];
+};
+
 export type KlinesHTTPResponse = [
   number,
   string,
@@ -42,6 +53,13 @@ export type TradesWSSResponse = {
   t: number; // Trade ID
 };
 
+export type ExchangeSocketData = {
+  baseAsset: string;
+  quoteAsset: string;
+  status: string;
+  symbol: string;
+};
+
 export type CandleStickSocketData = {
   close: number;
   color: string;
@@ -54,11 +72,19 @@ export type CandleStickSocketData = {
 
 export type TradesSocketData = {
   color?: string;
-  pair: string;
   price: number;
   quantity: number;
+  symbol: string;
   time: string;
 };
+
+export function exchangeAdaptor(
+  data: ExchangeHTTPResponse
+): ExchangeSocketData[] {
+  const { symbols } = data;
+
+  return symbols;
+}
 
 export function candleStickAdaptor(
   data: KlinesHTTPResponse
@@ -112,9 +138,9 @@ export function tradesSocketAdaptor(data: TradesWSSResponse): TradesSocketData {
   const { T, p, q, s } = data;
 
   return {
-    pair: s,
     price: parseFloat(p),
     quantity: parseFloat(q),
+    symbol: s,
     time: format(new Date(T), "hh:mm:ss"),
   };
 }
