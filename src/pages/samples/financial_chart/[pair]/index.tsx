@@ -6,14 +6,15 @@ import FinancialTradeComponent from "components/FinancialTrade";
 import Seo from "components/Seo";
 import {
   CandleStickSocketData,
+  KlinesHTTPResponse,
   KlinesWSSResponse,
   TradesSocketData,
   TradesWSSResponse,
   candleSocketAdaptor,
   tradesSocketAdaptor,
 } from "utils/adaptor";
-import { WS_URL } from "utils/constants";
-import FetchCandleStickData from "utils/fetchService";
+import ParseCandleStickData from "utils/candleStickService";
+import { BASE_URL, WS_URL } from "utils/constants";
 
 const FinancialChartComponent = dynamic(
   () => import("components/FinancialChart"),
@@ -42,9 +43,13 @@ export default function FinancialChart(): JSX.Element {
     time: "",
   });
   const fetchCandleData = useCallback(async () => {
-    const candleData = await FetchCandleStickData(pair, interval);
+    const url = `${BASE_URL}?symbol=${pair}&interval=${interval}`;
+    const result = await fetch(url);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const data: KlinesHTTPResponse[] = await result.json();
 
-    setCandleData(candleData);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    setCandleData(ParseCandleStickData(data));
   }, [interval, pair]);
 
   useEffect(() => {

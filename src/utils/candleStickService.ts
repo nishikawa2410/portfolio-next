@@ -5,7 +5,7 @@ import {
 } from "utils/adaptor";
 
 export default function ParseCandleStickData(
-  candleArray = []
+  candleArray: KlinesHTTPResponse[]
 ): CandleStickSocketData[] {
   const transformedData = candleArray.reduce(
     (accu: CandleStickSocketData[], curr: KlinesHTTPResponse) => {
