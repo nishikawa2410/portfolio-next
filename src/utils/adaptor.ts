@@ -53,6 +53,13 @@ export type TradesWSSResponse = {
   t: number; // Trade ID
 };
 
+export type Price24hSocketData = {
+  lastPrice: string;
+  priceChange: string;
+  priceChangePercent: string;
+  symbol: string;
+};
+
 export type ExchangeSocketData = {
   baseAsset: string;
   quoteAsset: string;
@@ -89,7 +96,6 @@ export function exchangeAdaptor(
 export function candleStickAdaptor(
   data: KlinesHTTPResponse
 ): CandleStickSocketData {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [
     openTime,
     open,

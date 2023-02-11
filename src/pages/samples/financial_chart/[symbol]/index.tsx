@@ -3,12 +3,14 @@ import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import FinancialChartControlComponent from "components/FinancialChartControl";
+import FinancialPriceListComponent from "components/FinancialPriceList";
 import FinancialTradeComponent from "components/FinancialTrade";
 import Seo from "components/Seo";
 import {
   CandleStickSocketData,
   ExchangeSocketData,
   KlinesWSSResponse,
+  Price24hSocketData,
   TradesSocketData,
   TradesWSSResponse,
   candleSocketAdaptor,
@@ -25,26 +27,35 @@ const FinancialChartComponent = dynamic(
 
 export default function FinancialChart(): JSX.Element {
   const searchParams = useSearchParams();
+  // 為替ペア(symbol)
   const symbol = useMemo(
     () => searchParams.get("symbol") || "BTCBUSD",
     [searchParams]
   );
+  // 相場更新レート
   const interval = useMemo(
     () => searchParams.get("interval") || "1m",
     [searchParams]
   );
+  // symbol データ
   const [exchangeData, setExchangeData] = useState<ExchangeSocketData[]>([]);
+  // 24h価格変動データ
+  const [price24hData, setPrice24hData] = useState<Price24hSocketData[]>([]);
+  // 相場履歴データ
   const [candleStickData, setCandleData] = useState<CandleStickSocketData[]>(
     []
   );
+  // 相場リアルタイム更新データ
   const [updateKlinesData, setUpdateKlinesData] =
     useState<CandleStickSocketData | null>(null);
+  // 取引リアルタイム更新データ
   const [updateTradeData, setUpdateTradeData] = useState<TradesSocketData>({
     price: 0,
     quantity: 0,
     symbol: "",
     time: "",
   });
+  // symbol データ取得
   const fetchExchangeData = useCallback(async () => {
     const url = `${BASE_URL}/exchangeInfo`;
     const result = await fetch(url);
@@ -54,6 +65,17 @@ export default function FinancialChart(): JSX.Element {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     setExchangeData(exchangeAdaptor(data));
   }, []);
+  // 24h価格変動データ取得
+  const fetchPrice24hData = useCallback(async () => {
+    const url = `${BASE_URL}/ticker/24hr?symbols=["BTCBUSD","ETHBUSD","BNBBUSD","XRPBUSD","ADABUSD","DOGEBUSD","MATICBUSD","SOLBUSD","DOTBUSD","SHIBBUSD","LTCBUSD","ETCBUSD"]`;
+    const result = await fetch(url);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const data = await result.json();
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    setPrice24hData(data);
+  }, []);
+  // 相場データ取得
   const fetchCandleData = useCallback(async () => {
     const url = `${BASE_URL}/klines?symbol=${symbol}&interval=${interval}`;
     const result = await fetch(url);
@@ -70,7 +92,7 @@ export default function FinancialChart(): JSX.Element {
         ?.baseAsset,
     [exchangeData, symbol]
   );
-  // 現在の baseAsset に紐つく symbol の option 配列
+  // 現在の baseAsset に紐つく取引可能な symbol の option 配列
   const quoteSymbolOptions = useMemo(
     () =>
       exchangeData
@@ -83,7 +105,7 @@ export default function FinancialChart(): JSX.Element {
         })),
     [base, exchangeData]
   );
-  // symbol の option 配列
+  // 取引可能な symbol の option 配列
   const symbolOptions = useMemo(
     () =>
       exchangeData
@@ -102,9 +124,15 @@ export default function FinancialChart(): JSX.Element {
 
   useEffect(() => {
     // eslint-disable-next-line no-void
+    void fetchPrice24hData();
+  }, [fetchPrice24hData]);
+
+  useEffect(() => {
+    // eslint-disable-next-line no-void
     void fetchCandleData();
   }, [fetchCandleData]);
 
+  // リアルタイムデータ取得
   useEffect(() => {
     const wsKline = new WebSocket(
       `${WS_URL}/${symbol.toLocaleLowerCase()}@kline_${interval}`
@@ -152,8 +180,8 @@ export default function FinancialChart(): JSX.Element {
                   "chart history"
                   "footer footer"`}
       >
-        <GridItem area={"header"} bg="orange.300">
-          Header
+        <GridItem area={"header"} bg="#131722" borderBottom="solid 1px #e2e8f0">
+          <FinancialPriceListComponent price24hData={price24hData} />
         </GridItem>
         <GridItem
           area={"control"}
@@ -177,8 +205,10 @@ export default function FinancialChart(): JSX.Element {
             updatedata={updateKlinesData}
           />
         </GridItem>
-        <GridItem area={"footer"} bg="blue.300">
-          Footer
+        <GridItem area={"footer"} bg="#131722" borderTop="solid 1px #e2e8f0">
+          {
+            // TODO: add footer
+          }
         </GridItem>
       </Grid>
     </>
