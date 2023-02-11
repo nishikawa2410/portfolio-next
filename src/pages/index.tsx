@@ -53,7 +53,7 @@ const NAV_ITEMS: Array<NavItem> = [
   {
     children: [
       {
-        href: "samples/financial_chart",
+        href: "samples/financial_chart/BTCBUSD?interval=1s",
         label: "BitCoin Financial Chart",
       },
       {
