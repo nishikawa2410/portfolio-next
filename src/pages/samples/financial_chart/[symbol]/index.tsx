@@ -125,6 +125,10 @@ export default function FinancialChart(): JSX.Element {
   useEffect(() => {
     // eslint-disable-next-line no-void
     void fetchPrice24hData();
+    setInterval(() => {
+      // eslint-disable-next-line no-void
+      void fetchPrice24hData();
+    }, 5000);
   }, [fetchPrice24hData]);
 
   useEffect(() => {
