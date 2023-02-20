@@ -1,6 +1,6 @@
-import { Grid, GridItem } from "@chakra-ui/react";
+import { Grid, GridItem, Text } from "@chakra-ui/react";
+import { GetServerSideProps } from "next";
 import dynamic from "next/dynamic";
-import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import FinancialChartControlComponent from "components/FinancialChartControl";
 import FinancialPriceListComponent from "components/FinancialPriceList";
@@ -25,18 +25,19 @@ const FinancialChartComponent = dynamic(
   { ssr: false }
 );
 
-export default function FinancialChart(): JSX.Element {
-  const searchParams = useSearchParams();
+export type FinancialChartProps = {
+  intervalParam: string;
+  symbolParam: string;
+};
+
+export default function FinancialChart({
+  intervalParam,
+  symbolParam,
+}: FinancialChartProps): JSX.Element {
   // 為替ペア(symbol)
-  const symbol = useMemo(
-    () => searchParams.get("symbol") || "BTCBUSD",
-    [searchParams]
-  );
+  const [symbol, setSymbol] = useState(symbolParam);
   // 相場更新レート
-  const interval = useMemo(
-    () => searchParams.get("interval") || "1m",
-    [searchParams]
-  );
+  const [chartInterval, setChartInterval] = useState(intervalParam);
   // symbol データ
   const [exchangeData, setExchangeData] = useState<ExchangeSocketData[]>([]);
   // 24h価格変動データ
@@ -77,14 +78,14 @@ export default function FinancialChart(): JSX.Element {
   }, []);
   // 相場データ取得
   const fetchCandleData = useCallback(async () => {
-    const url = `${BASE_URL}/klines?symbol=${symbol}&interval=${interval}`;
+    const url = `${BASE_URL}/klines?symbol=${symbol}&interval=${chartInterval}`;
     const result = await fetch(url);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const data = await result.json();
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     setCandleData(ParseCandleStickData(data));
-  }, [interval, symbol]);
+  }, [chartInterval, symbol]);
   // 現在の baseAsset
   const base = useMemo(
     () =>
@@ -132,14 +133,17 @@ export default function FinancialChart(): JSX.Element {
   }, [fetchPrice24hData]);
 
   useEffect(() => {
+    if (!chartInterval || !symbol) return;
+    // 為替ペア、相場更新レートが変更されたタイミングで初期化
+    setCandleData([]);
     // eslint-disable-next-line no-void
     void fetchCandleData();
-  }, [fetchCandleData]);
+  }, [chartInterval, fetchCandleData, symbol]);
 
   // リアルタイムデータ取得
   useEffect(() => {
     const wsKline = new WebSocket(
-      `${WS_URL}/${symbol.toLocaleLowerCase()}@kline_${interval}`
+      `${WS_URL}/${symbol.toLocaleLowerCase()}@kline_${chartInterval}`
     );
     const wsTrade = new WebSocket(
       `${WS_URL}/${symbol.toLocaleLowerCase()}@trade`
@@ -162,12 +166,73 @@ export default function FinancialChart(): JSX.Element {
 
     return () => {
       wsKline.close();
+      setUpdateKlinesData(null);
       wsTrade.close();
+      setUpdateTradeData({
+        price: 0,
+        quantity: 0,
+        symbol: "",
+        time: "",
+      });
     };
-  }, [interval, symbol]);
+  }, [chartInterval, symbol]);
 
   if (!candleStickData.length || !updateKlinesData) {
-    return <div className="loader" />;
+    return (
+      <>
+        <Seo title="FinancialChart" />
+        <Grid
+          color="blackAlpha.700"
+          fontWeight="bold"
+          gridTemplateColumns={"1fr 300px"}
+          gridTemplateRows={"80px 50px 1fr 50px"}
+          h="100vh"
+          templateAreas={`"header header"
+                "control history"
+                "chart history"
+                "footer footer"`}
+        >
+          <GridItem
+            area={"header"}
+            bg="#131722"
+            borderBottom="solid 1px #e2e8f0"
+          >
+            <Text color="gray.400" fontWeight="300" p={4}>
+              loading
+            </Text>
+          </GridItem>
+          <GridItem
+            area={"control"}
+            bg="#131722"
+            borderBottom="solid 1px #e2e8f0"
+            zIndex={99}
+          >
+            <Text color="gray.400" fontWeight="300" p={4}>
+              loading
+            </Text>
+          </GridItem>
+          <GridItem
+            area={"history"}
+            bg="#131722"
+            borderLeft="solid 1px #e2e8f0"
+          >
+            <Text color="gray.400" fontWeight="300" p={4}>
+              loading
+            </Text>
+          </GridItem>
+          <GridItem area={"chart"} bg="#131722">
+            <Text color="gray.400" fontWeight="300" p={4}>
+              loading
+            </Text>
+          </GridItem>
+          <GridItem area={"footer"} bg="#131722" borderTop="solid 1px #e2e8f0">
+            {
+              // TODO: add footer
+            }
+          </GridItem>
+        </Grid>
+      </>
+    );
   }
 
   return (
@@ -194,8 +259,10 @@ export default function FinancialChart(): JSX.Element {
           zIndex={99}
         >
           <FinancialChartControlComponent
-            interval={interval}
+            chartInterval={chartInterval}
             quoteSymbols={quoteSymbolOptions}
+            setChartInterval={setChartInterval}
+            setSymbol={setSymbol}
             symbol={symbol}
             symbols={symbolOptions}
           />
@@ -218,3 +285,15 @@ export default function FinancialChart(): JSX.Element {
     </>
   );
 }
+
+export const getServerSideProps: GetServerSideProps<
+  FinancialChartProps
+> = async ({
+  query: { interval: intervalParam, symbol: symbolParam },
+  // eslint-disable-next-line @typescript-eslint/require-await
+}) => ({
+  props: {
+    intervalParam: typeof intervalParam === "string" ? intervalParam : "1m",
+    symbolParam: typeof symbolParam === "string" ? symbolParam : "BTCBUSD",
+  },
+});

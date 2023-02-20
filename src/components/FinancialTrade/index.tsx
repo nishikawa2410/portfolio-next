@@ -114,6 +114,8 @@ export default function FinancialTradeComponent({
                   // see https://tanstack.com/table/v8/docs/api/core/column-def#meta to type this correctly
                   const meta: any = cell.column.columnDef.meta;
 
+                  if (!row.original.symbol) return null;
+
                   return (
                     <Td
                       borderColor="gray.500"

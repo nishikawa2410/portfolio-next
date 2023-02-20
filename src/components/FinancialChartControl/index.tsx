@@ -1,6 +1,7 @@
 "use client";
 import { Box, HStack, Heading, Text } from "@chakra-ui/react";
 import { Select as ChakraReactSelect } from "chakra-react-select";
+import { Dispatch, SetStateAction } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 
 type Option = {
@@ -9,15 +10,19 @@ type Option = {
 };
 
 type FinancialChartControlComponentProps = {
-  interval: string;
+  chartInterval: string;
   quoteSymbols: Option[];
+  setChartInterval: Dispatch<SetStateAction<string>>;
+  setSymbol: Dispatch<SetStateAction<string>>;
   symbol: string;
   symbols: Option[];
 };
 
 export default function FinancialChartControlComponent({
-  interval,
+  chartInterval,
   quoteSymbols,
+  setChartInterval,
+  setSymbol,
   symbol,
   symbols,
 }: FinancialChartControlComponentProps): JSX.Element {
@@ -38,8 +43,8 @@ export default function FinancialChartControlComponent({
             isRequired={true}
             onChange={(newValue): void => {
               if (!newValue?.value) return;
-              // TODO: next router に対応する
-              window.location.href = `/samples/financial_chart/${newValue.value}?interval=${interval}`;
+              setChartInterval(chartInterval);
+              setSymbol(newValue.value);
             }}
             options={quoteSymbols}
             placeholder={
@@ -63,8 +68,8 @@ export default function FinancialChartControlComponent({
             isRequired={true}
             onChange={(newValue): void => {
               if (!newValue?.value) return;
-              // TODO: next router に対応する
-              window.location.href = `/samples/financial_chart/${newValue.value}?interval=${interval}`;
+              setChartInterval(chartInterval);
+              setSymbol(newValue.value);
             }}
             options={symbols}
             placeholder={
@@ -89,8 +94,8 @@ export default function FinancialChartControlComponent({
             isSearchable={false}
             onChange={(newValue): void => {
               if (!newValue?.value) return;
-              // TODO: next router に対応する
-              window.location.href = `/samples/financial_chart/${symbol}?interval=${newValue.value}`;
+              setChartInterval(newValue.value);
+              setSymbol(symbol);
             }}
             options={[
               { label: "1s", value: "1s" },
@@ -110,7 +115,7 @@ export default function FinancialChartControlComponent({
               { label: "1w", value: "1w" },
               { label: "1M", value: "1M" },
             ]}
-            placeholder={<Text color="gray.400">{interval}</Text>}
+            placeholder={<Text color="gray.400">{chartInterval}</Text>}
             size="sm"
             useBasicStyles={true}
           />

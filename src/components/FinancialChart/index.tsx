@@ -95,7 +95,7 @@ export default function FinancialChartComponent({
     volumeSeries.current?.setData(initialChartData);
     candleSeries.current?.applyOptions({
       priceFormat: {
-        minMove: 0.001,
+        minMove: 0.00001,
         precision: 5,
         type: "price",
       },
@@ -112,7 +112,7 @@ export default function FinancialChartComponent({
   useEffect(() => {
     if (isRender || !chart || !chartContainerRef.current) return;
 
-    console.log("useEffect");
+    console.log("createChart");
     /* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/ban-ts-comment */
     // @ts-ignore
     chart.current = createChart(chartContainerRef.current, {
@@ -136,7 +136,7 @@ export default function FinancialChartComponent({
         height,
         width,
         priceFormat: {
-          minMove: 0.001,
+          minMove: 0.00001,
           precision: 5,
           type: "price",
         },
