@@ -1,6 +1,7 @@
-import { Grid, GridItem, Text } from "@chakra-ui/react";
+import { Box, Button, Grid, GridItem, Text } from "@chakra-ui/react";
 import { GetServerSideProps } from "next";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import FinancialChartControlComponent from "components/FinancialChartControl";
 import FinancialPriceListComponent from "components/FinancialPriceList";
@@ -34,6 +35,7 @@ export default function FinancialChart({
   intervalParam,
   symbolParam,
 }: FinancialChartProps): JSX.Element {
+  const router = useRouter();
   // 為替ペア(symbol)
   const [symbol, setSymbol] = useState(symbolParam);
   // 相場更新レート
@@ -130,10 +132,16 @@ export default function FinancialChart({
     // 24h価格変動データを5秒おきに更新する
     // eslint-disable-next-line no-void
     void fetchPrice24hData();
-    setInterval(() => {
+
+    const timerId = setInterval(() => {
       // eslint-disable-next-line no-void
       void fetchPrice24hData();
     }, 5000);
+
+    return () => {
+      // DOMがアンマウントされたとき、24h価格変動データ更新を止める
+      clearInterval(timerId);
+    };
   }, [fetchPrice24hData]);
 
   useEffect(() => {
@@ -281,10 +289,17 @@ export default function FinancialChart({
             updatedata={updateKlinesData}
           />
         </GridItem>
-        <GridItem area={"footer"} bg="#131722" borderTop="solid 1px #e2e8f0">
-          {
-            // TODO: add footer
-          }
+        <GridItem
+          area={"footer"}
+          bg="#131722"
+          borderTop="solid 1px #e2e8f0"
+          position="relative"
+        >
+          <Box left="20px" position="absolute" top="calc(50% - 12px)">
+            <Button onClick={(): void => router.back()} size="xs">
+              ←Back
+            </Button>
+          </Box>
         </GridItem>
       </Grid>
     </>
