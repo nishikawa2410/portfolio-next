@@ -106,11 +106,14 @@ export default function FinancialChart({
         })),
     [base, exchangeData]
   );
-  // 取引可能な symbol の option 配列
+  // quoteAsset が BUSD かつ取引可能な symbol の option 配列
   const symbolOptions = useMemo(
     () =>
       exchangeData
-        .filter(({ status }) => status === "TRADING")
+        .filter(
+          ({ quoteAsset, status }) =>
+            status === "TRADING" && quoteAsset === "BUSD"
+        )
         .map(({ symbol: symbolData }) => ({
           label: symbolData,
           value: symbolData,
