@@ -38,7 +38,7 @@ export default function FinancialChart({
   const [symbol, setSymbol] = useState(symbolParam);
   // 相場更新レート
   const [chartInterval, setChartInterval] = useState(intervalParam);
-  // symbol データ
+  // symbolデータ
   const [exchangeData, setExchangeData] = useState<ExchangeSocketData[]>([]);
   // 24h価格変動データ
   const [price24hData, setPrice24hData] = useState<Price24hSocketData[]>([]);
@@ -86,14 +86,14 @@ export default function FinancialChart({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     setCandleData(ParseCandleStickData(data));
   }, [chartInterval, symbol]);
-  // 現在の baseAsset
+  // 現在のbaseAsset
   const base = useMemo(
     () =>
       exchangeData.find(({ symbol: symbolData }) => symbol === symbolData)
         ?.baseAsset,
     [exchangeData, symbol]
   );
-  // 現在の baseAsset に紐つく取引可能な symbol の option 配列
+  // 現在のbaseAssetに紐つく取引可能なsymbolのoption配列
   const quoteSymbolOptions = useMemo(
     () =>
       exchangeData
@@ -106,7 +106,7 @@ export default function FinancialChart({
         })),
     [base, exchangeData]
   );
-  // quoteAsset が BUSD かつ取引可能な symbol の option 配列
+  // quoteAssetがBUSD かつ 取引可能なsymbolのoption配列
   const symbolOptions = useMemo(
     () =>
       exchangeData
@@ -127,6 +127,7 @@ export default function FinancialChart({
   }, [fetchExchangeData]);
 
   useEffect(() => {
+    // 24h価格変動データを5秒おきに更新する
     // eslint-disable-next-line no-void
     void fetchPrice24hData();
     setInterval(() => {
@@ -168,6 +169,7 @@ export default function FinancialChart({
     };
 
     return () => {
+      // DOMがアンマウントされたとき、WebSocketをクローズしstateを初期化する
       wsKline.close();
       setUpdateKlinesData(null);
       wsTrade.close();
@@ -295,6 +297,7 @@ export const getServerSideProps: GetServerSideProps<
   query: { interval: intervalParam, symbol: symbolParam },
   // eslint-disable-next-line @typescript-eslint/require-await
 }) => ({
+  // URLパラメータをサーバーサイドで取得することでレンダーの遅延をなくす
   props: {
     intervalParam: typeof intervalParam === "string" ? intervalParam : "1m",
     symbolParam: typeof symbolParam === "string" ? symbolParam : "BTCBUSD",
