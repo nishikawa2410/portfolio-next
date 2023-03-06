@@ -70,6 +70,8 @@ export default function FinancialChart({
   }, []);
   // 24h価格変動データ取得
   const fetchPrice24hData = useCallback(async () => {
+    // 表示したい有名な仮想通貨を列挙する
+    // TODO: 出来高などで取引が活発な通貨を取得できるといいかも
     const url = `${BASE_URL}/ticker/24hr?symbols=["BTCBUSD","ETHBUSD","BNBBUSD","XRPBUSD","ADABUSD","DOGEBUSD","MATICBUSD","SOLBUSD","DOTBUSD","SHIBBUSD","LTCBUSD","ETCBUSD"]`;
     const result = await fetch(url);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -95,7 +97,8 @@ export default function FinancialChart({
         ?.baseAsset,
     [exchangeData, symbol]
   );
-  // 現在のbaseAssetに紐つく取引可能なsymbolのoption配列
+  // Margin Pairsセレクトボックス用の配列
+  // 現在のbaseAssetに紐つく取引可能なsymbol
   const quoteSymbolOptions = useMemo(
     () =>
       exchangeData
@@ -108,6 +111,7 @@ export default function FinancialChart({
         })),
     [base, exchangeData]
   );
+  // Other Pairsセレクトボックス用の配列
   // quoteAssetがBUSD かつ 取引可能なsymbolのoption配列
   const symbolOptions = useMemo(
     () =>
@@ -154,13 +158,16 @@ export default function FinancialChart({
 
   // リアルタイムデータ取得
   useEffect(() => {
+    // 相場データWebSocket
     const wsKline = new WebSocket(
       `${WS_URL}/${symbol.toLocaleLowerCase()}@kline_${chartInterval}`
     );
+    // 取引データWebSocket
     const wsTrade = new WebSocket(
       `${WS_URL}/${symbol.toLocaleLowerCase()}@trade`
     );
 
+    // 相場データをパースしてstateを更新
     wsKline.onmessage = (e): void => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
       const messageKline: KlinesWSSResponse = JSON.parse(e.data);
@@ -168,6 +175,7 @@ export default function FinancialChart({
 
       setUpdateKlinesData(parsedMessageKline);
     };
+    // 取引データをパースしてstateを更新
     wsTrade.onmessage = (e): void => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument
       const messageTrades: TradesWSSResponse = JSON.parse(e.data);
@@ -190,6 +198,7 @@ export default function FinancialChart({
     };
   }, [chartInterval, symbol]);
 
+  // データ取得中のローディング表示
   if (!candleStickData.length || !updateKlinesData) {
     return (
       <>
