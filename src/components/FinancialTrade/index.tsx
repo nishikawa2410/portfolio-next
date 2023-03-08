@@ -43,6 +43,7 @@ export default function FinancialTradeComponent({
       },
     }),
   ];
+  // トレード情報リアルタイムデータを参照渡しするためのrefを定義
   const tradesRef = useRef<TradesSocketData[]>([
     {
       price: 0,
@@ -52,6 +53,7 @@ export default function FinancialTradeComponent({
     },
   ]);
 
+  // トレード情報リアルタイムデータの更新をメモ化することでクライアントの負荷を下げる
   useMemo(() => {
     if (!updateTradeData) return;
 
@@ -63,7 +65,11 @@ export default function FinancialTradeComponent({
 
     const tradesArray = [updateTradeData, ...tradesRef.current];
 
+    // トレード情報を全て保持するとメモリ使用率が圧迫されるので、30件のみ保持する
     if (tradesArray.length >= 30) tradesArray.pop();
+
+    // 更新頻度が高いトレード情報リアルタイムデータをuseRefで参照渡しする
+    // これによって値が更新されてもレンダリングを防げる
     tradesRef.current = tradesArray;
   }, [updateTradeData]);
 
@@ -73,6 +79,7 @@ export default function FinancialTradeComponent({
     getCoreRowModel: getCoreRowModel(),
   });
 
+  // useEffect内でsetIntervalすることで0.5秒おきにトレード情報の配列をレンダリングする
   useEffect(() => {
     setInterval(() => {
       setTradesArrayData(tradesRef.current);
