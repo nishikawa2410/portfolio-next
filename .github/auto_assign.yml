@@ -1,0 +1,9 @@
+addAssignees: author
+addReviewers: true
+numberOfReviewers: 1
+reviewGroups:
+  groupA:
+    - nishikawa2410
+skipKeywords:
+  - deps
+useReviewGroups: true
