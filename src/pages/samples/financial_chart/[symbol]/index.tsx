@@ -321,7 +321,7 @@ export const getServerSideProps: GetServerSideProps<
   query: { interval: intervalParam, symbol: symbolParam },
   // eslint-disable-next-line @typescript-eslint/require-await
 }) => ({
-  // URLパラメータをサーバーサイドで取得することでレンダーの遅延をなくす
+  // URLパラメータをサーバーサイドで取得することでレンダーの遅延をなくすtest
   props: {
     intervalParam: typeof intervalParam === "string" ? intervalParam : "1m",
     symbolParam: typeof symbolParam === "string" ? symbolParam : "BTCBUSD",
