@@ -3,7 +3,7 @@ addReviewers: true
 numberOfReviewers: 1
 reviewGroups:
   groupA:
-    - nishikawa2410
+    - YamikarasuMk22
 skipKeywords:
   - deps
 useReviewGroups: true
