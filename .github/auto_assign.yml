@@ -1,9 +1,0 @@
-addAssignees: author
-addReviewers: true
-numberOfReviewers: 1
-reviewGroups:
-  groupA:
-    - YamikarasuMk22
-skipKeywords:
-  - deps
-useReviewGroups: true
